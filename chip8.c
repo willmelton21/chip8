@@ -21,10 +21,20 @@ unsigned  char font[85] = {
    
 };
 
+void initDisplay(Chip8 *c8) {
+   size_t displayLength = sizeof(c8->display) / sizeof(c8->display[0]);
+   for (int i = 0; i < displayLength; i++) {
+      c8->display[i] = 0;
+   }
+
+}
+
 void init(Chip8* c8) {
-    printf("c8 pc is %d\n",c8->PC);
-    c8->PC = 0;
-    printf("after statemnet\n");
+   printf("c8 pc is %d\n",c8->PC);
+   c8->PC = 0;
+   c8->i = 0;
+
+   initDisplay(c8);
 
 }
 
