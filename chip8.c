@@ -1,4 +1,6 @@
 #include "chip8.h"
+#include <stdio.h>
+#include <string.h>
 
 
 unsigned  char font[85] = {
@@ -13,28 +15,45 @@ unsigned  char font[85] = {
     0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
     0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
     0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B 0xF0, 0x80, 0x80, 0x80, 0xF0, // C
     0xE0, 0x90, 0x90, 0x90, 0xE0, // D
     0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
    
 };
 
-void initDisplay(Chip8 *c8) {
-   size_t displayLength = sizeof(c8->display) / sizeof(c8->display[0]);
-   for (int i = 0; i < displayLength; i++) {
-      c8->display[i] = 0;
+
+
+
+void loadRom(Chip8* c8, char const* filename) {
+   const unsigned int memstart = 0x200;
+   FILE *fp;
+   fp = fopen(filename,"rb");
+   if (fp == NULL) {
+      perror("error opening file");
    }
+   fseek(fp, 0,SEEK_END);
+   int size = ftell(fp);
+   fseek(fp,0,SEEK_SET);
+   fread(c8->memory+memstart,sizeof(int8_t), size,fp);
+
+
+   fclose(fp);
 
 }
 
 void init(Chip8* c8) {
    printf("c8 pc is %d\n",c8->PC);
-   c8->PC = 0;
+   c8->PC = 0x200;
    c8->i = 0;
-
-   initDisplay(c8);
+   c8->delayTimer = 0;
+   c8->soundTimer = 0;
+   c8->opcode = 0;
+   c8->sp = 0;
+   memset(c8->memory,0,sizeof(c8->memory));
+   memset(c8->display,0,sizeof(c8->display));
+   memset(c8->keypad,0,sizeof(c8->keypad));
+   memset(c8->varReg,0,sizeof(c8->varReg));
 
 }
 

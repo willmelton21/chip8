@@ -19,6 +19,8 @@ int main(int argc, char* argv[]) {
 
     printf("about to enter loop\n");
 
+    loadRom(&chip8,argv[1]);
+
     for(;;) { //for fetch, decode, execute loop
        
       //fetch
@@ -26,7 +28,7 @@ int main(int argc, char* argv[]) {
       int8_t inst2 = chip8.memory[chip8.PC++];
       printf("inst 1 is %d\n",inst1);
       printf("inst 2 is %d\n",inst2);
-      int16_t inst = (inst2 << 16) | inst1;
+      int16_t inst = (inst2 << 8) | inst1;
       printf("full inst is %d\n",inst);
 
 
