@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <stdbool.h>
+#include <inttypes.h>
 #include "chip8.h"
+
 
 
 int main(int argc, char* argv[]) {
@@ -19,19 +22,25 @@ int main(int argc, char* argv[]) {
 
     printf("about to enter loop\n");
 
+    const unsigned int memstart = 0x200;
+
     loadRom(&chip8,argv[1]);
+    bool isFirst = true;
 
     for(;;) { //for fetch, decode, execute loop
        
       //fetch
-      int8_t inst1 = chip8.memory[chip8.PC++];
-      int8_t inst2 = chip8.memory[chip8.PC++];
-      printf("inst 1 is %d\n",inst1);
-      printf("inst 2 is %d\n",inst2);
+      int8_t inst1 = chip8.memory[memstart + chip8.PC++];
+      printf("inst 1 location is %d\n",memstart + chip8.PC);
+      int8_t inst2 = chip8.memory[memstart + chip8.PC++];
+      printf("inst 1 is %" PRIi8"\n",inst1);
+      printf("inst 2 is %" PRIi8"\n",inst2);
+      printf("inst 2 location is %d\n",memstart + chip8.PC);
       int16_t inst = (inst2 << 8) | inst1;
-      printf("full inst is %d\n",inst);
+      printf("full inst is %hhX\n",inst);
 
-
+      //decode
+      
         
 
     }

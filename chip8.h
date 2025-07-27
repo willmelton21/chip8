@@ -6,6 +6,7 @@
 
 
 #define MEM_SIZE 4096
+#define FONT_SIZE 85
 
 typedef struct {
     uint8_t memory[MEM_SIZE];
@@ -23,14 +24,24 @@ typedef struct {
 } Chip8;
 
 
-extern unsigned char font[85];
+extern unsigned char font[FONT_SIZE];
 
 
 void loadRom(Chip8* c8, char const* filename);
+void loadFont(Chip8* c8);
 void init(Chip8* c8); 
+
 char getKey(char key); 
 void popStack(Chip8* c8);
 void pushStack(Chip8* c8,int16_t addr);
+
 void updateTimers(Chip8* c8);
+void parseInstruction(Chip8* c8, int16_t inst);
+void clearScreen(Chip8* c8);
+void jump(Chip8* c8);
+void setRegister(Chip8* c8,int16_t inst);
+void addValToRegister(Chip8* c8);
+void setIndexRegister(Chip8* c8);
+void draw(Chip8* c8);
 
 #endif // CHIP8_H

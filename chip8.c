@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-unsigned  char font[85] = {
+unsigned  char font[FONT_SIZE] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
     0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
@@ -15,15 +15,24 @@ unsigned  char font[85] = {
     0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
     0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
     0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B 0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B 
+    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
     0xE0, 0x90, 0x90, 0x90, 0xE0, // D
     0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
-   
 };
 
 
 
+
+void loadFont(Chip8 *c8) {
+   const unsigned int FONTSET_START_ADDRESS = 0x50;
+
+   for (unsigned int i = 0; i < FONT_SIZE; i++) {
+      c8->memory[FONTSET_START_ADDRESS+i] = font[i];
+   } 
+
+}
 
 void loadRom(Chip8* c8, char const* filename) {
    const unsigned int memstart = 0x200;
@@ -50,10 +59,13 @@ void init(Chip8* c8) {
    c8->soundTimer = 0;
    c8->opcode = 0;
    c8->sp = 0;
+
    memset(c8->memory,0,sizeof(c8->memory));
    memset(c8->display,0,sizeof(c8->display));
    memset(c8->keypad,0,sizeof(c8->keypad));
    memset(c8->varReg,0,sizeof(c8->varReg));
+
+   loadFont(c8);
 
 }
 
@@ -159,5 +171,59 @@ void updateTimers(Chip8* c8) {
 
 }
 
+void returnFromSubroutine(Chip8* c8) {
+   c8->sp--;
+   c8->PC = c8->stack[c8->sp];
+   return;
+}
 
+void clearDisplay(Chip8* c8) {
+   memset(c8->display, 0,sizeof(c8->display));
+   return;
+}
+
+void jumpLocation(Chip8* c8, int16_t inst) {
+   
+   c8->PC = inst & 0x00FF;
+   return;
+}
+
+void setRegister(Chip8* c8, int16_t inst) {
+   int index = inst & 0x0F00;
+   c8->varReg[index] = inst & 0x00FF;
+   return;
+}
+
+
+
+
+void parseInstruction(Chip8* c8, int16_t inst) {
+
+   switch (inst & 0xF000) {
+      case 0x0000:
+         if ((inst & 0x00FF) == 0x0EE0) {
+            returnFromSubroutine(c8);
+            break;
+         }
+         else if ((inst & 0x00F0) == 0x0E0) {
+            //clear display
+            clearDisplay(c8);
+            break;
+         }
+         else {
+            printf("shouldn't be here! in 0x000 case statement, but no valid instruction was found\n");
+            break;
+         }
+
+      case 0x1000:
+         jumpLocation(c8, inst);
+         break;
+
+      case 0x6000:
+         setRegister(c8, inst);
+         break;
+
+   }
+    
+}
 
