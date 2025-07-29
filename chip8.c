@@ -1,4 +1,5 @@
 #include "chip8.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -194,7 +195,27 @@ void setRegister(Chip8* c8, int16_t inst) {
    return;
 }
 
+void addValToRegister(Chip8 *c8, int16_t inst) {
+   int index = inst & 0x0F00;
+   c8->varReg[index] += inst & 0x00FF;
+   return;
+}
 
+
+void setIndexRegister(Chip8* c8, int16_t inst) {
+   c8->i = inst & 0x0FFF;
+   return;
+}
+
+void draw(Chip8 *c8, int16_t inst) {
+   int xIndex = inst & 0x0F00;
+   int yIndex = inst & 0x00F0;
+
+   int xPos = c8->varReg[xIndex] % DISPLAY_WIDTH;
+   int yPos = c8->varReg[yIndex] % DISPLAY_HEIGHT;
+
+   c8->varReg[0xF] = 0;
+}
 
 
 void parseInstruction(Chip8* c8, int16_t inst) {
@@ -221,6 +242,18 @@ void parseInstruction(Chip8* c8, int16_t inst) {
 
       case 0x6000:
          setRegister(c8, inst);
+         break;
+
+      case 0x7000:
+         addValToRegister(c8, inst);
+         break;
+
+      case 0xA000:
+         setIndexRegister(c8,inst);
+         break;
+
+      case 0xD000:
+         draw(c8,inst);
          break;
 
    }
