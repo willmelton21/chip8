@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include "chip8.h"
-
+#include "screen.h"
 
 
 int main(int argc, char* argv[]) {
@@ -22,22 +22,21 @@ int main(int argc, char* argv[]) {
 
     printf("about to enter loop\n");
 
-    const unsigned int memstart = 0x200;
+    initWindow();
 
+    const unsigned int memstart = 0x200;
+    
     loadRom(&chip8,argv[1]);
     bool isFirst = true;
 
     for(;;) { //for fetch, decode, execute loop
        
       //fetch
-      int8_t inst1 = chip8.memory[memstart + chip8.PC++];
-      printf("inst 1 location is %d\n",memstart + chip8.PC);
-      int8_t inst2 = chip8.memory[memstart + chip8.PC++];
-      printf("inst 1 is %" PRIi8"\n",inst1);
-      printf("inst 2 is %" PRIi8"\n",inst2);
-      printf("inst 2 location is %d\n",memstart + chip8.PC);
-      int16_t inst = (inst2 << 8) | inst1;
-      printf("full inst is %hhX\n",inst);
+      uint8_t inst1 = chip8.memory[chip8.PC++];
+      uint8_t inst2 = chip8.memory[chip8.PC++];
+      uint16_t inst = (inst1 << 8) | inst2; 
+      //printf("PC: 0x%03X, inst1: 0x%02X, inst2: 0x%02X, full inst: 0x%04X\n",chip8.PC - 2, inst1, inst2, inst);
+      parseInstruction(&chip8, inst);
 
       //decode
       

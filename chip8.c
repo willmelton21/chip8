@@ -42,12 +42,27 @@ void loadRom(Chip8* c8, char const* filename) {
    if (fp == NULL) {
       perror("error opening file");
    }
-   fseek(fp, 0,SEEK_END);
-   int size = ftell(fp);
-   fseek(fp,0,SEEK_SET);
-   fread(c8->memory+memstart,sizeof(int8_t), size,fp);
+
+   if (fseek(fp, 0,SEEK_END) != 0) {
+      perror("fseek failed");
+      fclose(fp);
+      return;
+   }
+   long size = ftell(fp);
+   if (size < 0) {
+      perror("ftell failed");
+      fclose(fp);
+      return;
+   }
+   rewind(fp);
 
 
+   size_t bytesRead = fread(c8->memory+memstart,sizeof(uint8_t), size,fp);
+   printf("bytes read is %zu\n",bytesRead);
+
+    if (bytesRead == 0) {
+        printf("Warning: ROM appears to be empty or failed to load.\n");
+    }
    fclose(fp);
 
 }
@@ -183,26 +198,26 @@ void clearDisplay(Chip8* c8) {
    return;
 }
 
-void jumpLocation(Chip8* c8, int16_t inst) {
+void jumpLocation(Chip8* c8, uint16_t inst) {
    
    c8->PC = inst & 0x00FF;
    return;
 }
 
-void setRegister(Chip8* c8, int16_t inst) {
+void setRegister(Chip8* c8, uint16_t inst) {
    int index = inst & 0x0F00;
    c8->varReg[index] = inst & 0x00FF;
    return;
 }
 
-void addValToRegister(Chip8 *c8, int16_t inst) {
+void addValToRegister(Chip8 *c8, uint16_t inst) {
    int index = inst & 0x0F00;
    c8->varReg[index] += inst & 0x00FF;
    return;
 }
 
 
-void setIndexRegister(Chip8* c8, int16_t inst) {
+void setIndexRegister(Chip8* c8, uint16_t inst) {
    c8->i = inst & 0x0FFF;
    return;
 }
@@ -215,10 +230,30 @@ void draw(Chip8 *c8, int16_t inst) {
    int yPos = c8->varReg[yIndex] % DISPLAY_HEIGHT;
 
    c8->varReg[0xF] = 0;
+
+   for (int spriteRow=0; spriteRow<DISPLAY_HEIGHT; ++spriteRow) {
+      int spriteRowData = c8->memory[c8->i + spriteRow];
+         for (int spriteBit = 0; spriteBit<8; ++spriteBit) {
+            
+            if (xPos+spriteBit < DISPLAY_WIDTH && yPos+spriteRow< DISPLAY_HEIGHT) {
+               int idx = (xPos + spriteBit) + ((yPos + spriteRow) * 64);
+               int screenPixel = c8->display[idx];
+               int spritePixel = (spriteRowData & ((1 << 7) - c8->i)) != 0; //Current Sprite Pixel
+               if (screenPixel && spritePixel) {
+                  c8->varReg[0xf] = 1;
+                  c8->display[idx] = 0;
+            }
+            if (!screenPixel && spritePixel) {
+                  c8->display[idx] = 1;
+            }
+         }
+      }
+   }
 }
 
 
-void parseInstruction(Chip8* c8, int16_t inst) {
+void parseInstruction(Chip8* c8, uint16_t inst) {
+  // printf("PC: 0x%03X, Instruction: 0x%04X\n", c8->PC - 2, inst); 
 
    switch (inst & 0xF000) {
       case 0x0000:
@@ -232,7 +267,7 @@ void parseInstruction(Chip8* c8, int16_t inst) {
             break;
          }
          else {
-            printf("shouldn't be here! in 0x000 case statement, but no valid instruction was found\n");
+            //printf("shouldn't be here! in 0x000 case statement, but no valid instruction was found\n");
             break;
          }
 

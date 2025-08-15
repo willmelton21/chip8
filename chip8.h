@@ -38,12 +38,12 @@ void popStack(Chip8* c8);
 void pushStack(Chip8* c8,int16_t addr);
 
 void updateTimers(Chip8* c8);
-void parseInstruction(Chip8* c8, int16_t inst);
+void parseInstruction(Chip8* c8, uint16_t inst);
 void clearScreen(Chip8* c8);
 void jump(Chip8* c8);
-void setRegister(Chip8* c8,int16_t inst);
-void addValToRegister(Chip8* c8, int16_t inst);
-void setIndexRegister(Chip8* c8, int16_t inst);
+void setRegister(Chip8* c8,uint16_t inst);
+void addValToRegister(Chip8* c8, uint16_t inst);
+void setIndexRegister(Chip8* c8, uint16_t inst);
 void draw(Chip8* c8,int16_t inst);
 
 #endif // CHIP8_H
